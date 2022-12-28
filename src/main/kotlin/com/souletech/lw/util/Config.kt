@@ -41,7 +41,7 @@ data class Stock(
 )
 
 data class Adjustments(
-    val adjustmentTimeout: Int,
+    val adjustmentTimeout: Long,
     val maximumErrors: Int,
     val pausePeriod: Int,
 )

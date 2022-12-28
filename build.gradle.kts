@@ -18,6 +18,9 @@ dependencies {
     implementation("com.sksamuel.hoplite:hoplite:1.0.3")
     implementation("com.sksamuel.hoplite:hoplite-yaml:2.7.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    implementation("io.arrow-kt:arrow-core:1.0.1")
+    implementation ("io.github.microutils:kotlin-logging-jvm:3.0.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 }
 
 tasks.test {
