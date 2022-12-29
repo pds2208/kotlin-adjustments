@@ -1,4 +1,4 @@
-package com.souletech.lw
+package com.souletech.lw.util
 
 import java.sql.Date
 import java.sql.Timestamp

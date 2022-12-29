@@ -1,13 +1,9 @@
 package com.souletech.lw.adjustments
 
-import arrow.core.Either
 import com.souletech.lw.cost.CostPrice
-import com.souletech.lw.errors.AdjustmentError
 import com.souletech.lw.stock.StockInfo
 import com.souletech.lw.stock.UpdateStock
-import com.souletech.lw.util.Configuration
 import mu.KotlinLogging
-import java.util.*
 
 class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock) : AddAdjustment {
 
@@ -40,7 +36,7 @@ class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock) 
                 if (result.resources.isEmpty())
                     logger.warn { "Sage did not return a cost price for ${info.stockCode} - does this item exist?" }
                 else
-                    updateStock.updateStock(info, result.resources.get(0).cost)
+                    updateStock.updateStock(info, result.resources[0].cost)
             }
     }
 
