@@ -1,14 +1,17 @@
 package com.souletech.lw.adjustments
 
 import arrow.core.Either
-import arrow.core.computations.either
 import com.souletech.lw.cost.CostPrice
 import com.souletech.lw.errors.AdjustmentError
 import com.souletech.lw.stock.StockInfo
 import com.souletech.lw.stock.UpdateStock
 import com.souletech.lw.util.Configuration
+import mu.KotlinLogging
+import java.util.*
 
-class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock, val config: Configuration) : AddAdjustment  {
+class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock) : AddAdjustment {
+
+    private val logger = KotlinLogging.logger {}
 
     override suspend fun addAdjustmentIn(
         date: String,
@@ -16,7 +19,7 @@ class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock, 
         reference: String,
         batch: String,
         quantity: Double
-    ): Either<AdjustmentError, UpdateStock.UpdateStockResponse> {
+    ) {
         return addAdjustment(StockInfo(date, Adjustments.AdjustmentType.IN, quantity, stockCode, reference, batch))
     }
 
@@ -26,15 +29,19 @@ class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock, 
         reference: String,
         batch: String,
         quantity: Double
-    ): Either<AdjustmentError, UpdateStock.UpdateStockResponse> {
+    ) {
         return addAdjustment(StockInfo(date, Adjustments.AdjustmentType.OUT, quantity, stockCode, reference, batch))
     }
 
-    private suspend fun addAdjustment(info: StockInfo): Either<AdjustmentError, UpdateStock.UpdateStockResponse> {
-        return  either {
-            val costPrice = costPrice.getCostPrice(info.stockCode).bind()
-            updateStock.updateStock(info, costPrice).bind()
-        }
+    private suspend fun addAdjustment(info: StockInfo) {
+        costPrice.getCostPrice(info.stockCode)
+            .onFailure { e -> logger.warn { "Error retrieving a cost price for ${info.stockCode}: ${e.message}" } }
+            .onSuccess { result ->
+                if (result.resources.isEmpty())
+                    logger.warn { "Sage did not return a cost price for ${info.stockCode} - does this item exist?" }
+                else
+                    updateStock.updateStock(info, result.resources.get(0).cost)
+            }
     }
 
 }

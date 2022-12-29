@@ -1,11 +1,9 @@
 package com.souletech.lw.stock
 
-import arrow.core.Either
-import com.souletech.lw.errors.StockAdjustmentError
 import kotlinx.serialization.Serializable
 
 interface UpdateStock {
-    fun updateStock(stockInfo: StockInfo, costPrice: Double): Either<StockAdjustmentError, UpdateStockResponse>
+    fun updateStock(stockInfo: StockInfo, costPrice: Double)
 
     @Serializable
     data class UpdateStockRequest(

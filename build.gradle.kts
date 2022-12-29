@@ -21,7 +21,11 @@ dependencies {
     implementation("io.arrow-kt:arrow-core:1.0.1")
     implementation ("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.4")
+    implementation("io.pebbletemplates:pebble:3.2.0")
+    implementation("com.wildbit.java:postmark:1.9.0")
 }
+
 
 tasks.test {
     useJUnitPlatform()

@@ -1,0 +1,302 @@
+<html lang="en">
+
+    {# @pebvariable name="stats" type="com.souletech.lw.adjustments.Statistics" #}
+    {# @pebvariable name="host" type=String" #}
+
+<div class="container-fluid ml-2 mr-2 mt-3 mb-3 w-100 align-items-start">
+
+    <div class="row">
+        <div class="col-sm-4">
+            <button id="clear-errors" onclick="clear_errors()"
+                    class="btn btn-sm btn-danger mt-1 mb-2 ml-0 pt-1 pb-1"
+                    data-toggle="tooltip" data-placement="top" title="Clear error stats"
+                    type="submit"><small>Clear Errors</small>
+            </button>
+            <div data-toggle="tooltip" data-placement="top" title="Click to enable/disable background updates">
+                <div class="form-check form-switch">
+                    {% if stats.paused %}
+                        <input id="switch" class="form-check-input" type="checkbox">
+                        {% else %}
+                        <input id="switch" class="form-check-input" type="checkbox" checked>
+                    {% endif %}
+                    <label for="switch" class="text-sm-left">Update Sage</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-8">
+            <div class="row align-middle">
+                <div class="col-4">
+                    Total errors:
+                </div>
+                <div id="totalErrors" class="col-1">
+                        {{ stats.totalFailures }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">
+                    Total successful:
+                </div>
+                <div id="totalSuccessful" class="col-1">
+                        {{ stats.totalUpdated }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-4">
+                    Retries:
+                </div>
+                <div id="totalWithRetries" class="col-4">
+                        {{ stats.totalWithRetries }}
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-4">
+                    To send:
+                </div>
+                <div id="itemsToSend" class="col-1">
+                        {{ stats.toUpdate }}
+                </div>
+                <div class="col">
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    {% flush %}
+
+<div class="container-fluid ml-5 mr-5 mb-5 mx-auto w-100" id="adjustments-table">
+
+    <div class="resize_wrapper" style="margin-top: 7em;">
+
+        <table id="adjustments" class="table w-100">
+            <thead>
+            <tr>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Stock Code</th>
+                <th>Roll/Cut Date</th>
+                <th>Reference</th>
+                <th>Batch</th>
+                <th>Sage Updated</th>
+                <th>Failures</th>
+                <th>Inserted At</th>
+                <th>Sage Updated At</th>
+                <th></th>
+                <th></th>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="mb-5"></div>
+
+<input type="hidden" id="host" value="{{ host }}"/>
+
+<script>
+
+    let adjustments;
+    let host = $("#host").val();
+
+    let update_stats = (_) => {
+        fetch(host + "/adjustments/statistics")
+                .then(response => response.json())
+                .then(x => {
+                    document.getElementById("totalErrors").innerHTML = x.totalFailures;
+                    document.getElementById("totalSuccessful").innerHTML = x.totalUpdated;
+                    document.getElementById("totalWithRetries").innerHTML = x.totalWithRetries;
+                    document.getElementById("itemsToSend").innerHTML = x.toUpdate;
+                })
+    };
+
+    let clear_errors = () => {
+        const url = host + "/adjustments/clear-errors";
+        fetch(url, {method: 'PUT'})
+                .then(function (_) {
+                    update_stats();
+                })
+    }
+
+    let mark_not_updated = (id) => {
+        const url = host + "/adjustments/mark-not-uploaded/" + id;
+        fetch(url, {method: 'PUT'})
+                .then(function (_) {
+                    adjustments.ajax.reload();
+                })
+                .then(function (_) {
+                    update_stats();
+                })
+    }
+
+    let mark_updated = (id) => {
+        const url = host + "/adjustments/mark-uploaded/" + id;
+        fetch(url, {method: 'PUT'})
+                .then(function (_) {
+                    adjustments.ajax.reload();
+                })
+                .then(function (_) {
+                    update_stats();
+                })
+    }
+
+    let delete_item = (id) => {
+        const url = host + "/adjustments/delete/" + id;
+        fetch(url, {method: 'DELETE'})
+                .then(function (_) {
+                    adjustments.ajax.reload();
+                })
+                .then(function (_) {
+                    update_stats();
+                })
+    }
+
+    $(function () {
+
+        let toggle = document.querySelector('#switch');
+        toggle.addEventListener("change", (_) => {
+            let uri = toggle.checked ? host + "/adjustments/resume" : host + "/adjustments/pause";
+            fetch(uri, {method: 'PUT'});
+        })
+
+        let pageScrollPos = 0;
+
+        adjustments = $('#adjustments')
+                .on('draw.dt', function () {
+                    $('[data-toggle="tooltip"]').tooltip();
+                })
+                .on('preXhr.dt', function (e, settings, data) {
+                }).DataTable({
+                    "initComplete": function (settings, json) {
+                        adjustments.buttons().container().appendTo('#adjustments_wrapper .col-md-6:eq(0)');
+                        $('[data-toggle="tooltip"]').tooltip();
+                    },
+
+                    "preDrawCallback": function (settings) {
+                        pageScrollPos = $('div.dataTables_scrollBody').scrollTop();
+                    },
+
+                    "drawCallback": function (settings) {
+                        $('div.dataTables_scrollBody').scrollTop(pageScrollPos);
+                    },
+
+                    paging: true,
+                    scrollResize: true,
+                    stateSave: true,
+                    stateDuration: 0,
+                    deferRender: false,
+                    retrieve: true,
+
+                    scrollY: 500,
+
+                    pageLength: 100,
+
+                    serverSide: true,
+                    processing: false,
+
+                    ajax: {
+                        url: host + "/adjustments/items",
+                        "dataSrc": function (json) {
+                            return json.data;
+                        }
+                    },
+
+                    "lengthMenu": [10, 25, 50, 75, 100],
+
+                    "columns": [
+                        {"data": "type"},
+                        {"data": "amount", width: 100},
+                        {"data": "stockCode"},
+                        {"data": "adjustmentDate"},
+                        {"data": "ref"},
+                        {"data": "batch"},
+                        {
+                            "data": "sageUpdated",
+                            "render": function (data, type, row, meta) {
+                                if (row['updatePaused'] === 'Yes') {
+                                    return '<span class="font-weight-bold text-danger">Paused</span>';
+                                } else {
+                                    return '<span>' + data + '</span>';
+                                }
+                            }
+                        },
+                        {"data": "totalFailures"},
+                        {"data": "insertedAt"},
+                        {"data": "updatedAt"},
+                        {
+                            data: 'id',
+                            width: 20,
+                            "searching": false, "orderable": false,
+                            "render": function (data, type, row, meta) {
+                                if (row['sageUpdated'] === 'Yes') {
+                                    return '<button class="btn btn-primary " data-toggle="tooltip" data-placement="top" title="Set Sage status to not uploaded" ' +
+                                            'onclick="mark_not_updated(' + data + ')" "><span class="fas fa-undo"></span></button>';
+                                } else {
+                                    return '<button class="btn btn-primary btn-sm " data-toggle="tooltip" data-placement="top" title="Set Sage status to uploaded" ' +
+                                            'onclick="mark_updated(' + data + ')" "><span class="fas fa-check"></span></button>';
+                                }
+                            }
+                        },
+                        {
+                            data: 'id',
+                            width: 20,
+                            "searching": false, "orderable": false,
+                            "render": function (data, type, row, meta) {
+                                return '<button class="btn btn-danger " data-toggle="tooltip" data-placement="top" title="Delete adjustment" ' +
+                                        'onclick="delete_item(' + data + ')" "><span class="fas fa-trash"></span></button>';
+                            }
+                        },
+                    ],
+
+                    order: [7, 'asc'],
+
+                    buttons: {
+                        dom: {
+                            button: {
+                                className: 'mt-3 mb-3'
+                            }
+                        },
+
+                        buttons: [
+                            {
+                                attr: {
+                                    'data-toggle': 'tooltip',
+                                    'data-placement': 'top',
+                                    'title': 'Export to excel'
+                                },
+                                "extend": 'excel', "text": '<span class="fa fa-file-excel"></span>',
+                                "className": 'btn btn-primary mr-1',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                                }
+                            },
+                            {
+                                attr: {
+                                    'data-toggle': 'tooltip',
+                                    'data-placement': 'top',
+                                    'title': 'Print adjustments'
+                                },
+                                "extend": 'print', "text": '<span class="fa fa-print"></span>',
+                                "className": 'btn btn-primary',
+                                exportOptions: {
+                                    columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                                }
+                            },
+
+                        ]
+                    },
+
+                });
+
+    });
+
+    setInterval(function () {
+        update_stats();
+        adjustments.ajax.reload();
+    }, 10000);
+
+</script>
+</html>

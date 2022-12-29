@@ -1,0 +1,16 @@
+{# @pebvariable name="stockCode" type="java.lang.String" #}
+{# @pebvariable name="maxErrors" type="int" "#}
+{# @pebvariable name="errorMessage" type="java.lang.String" #}
+
+<html lang="en">
+<body>
+<br>
+<p><b>Error threshold exceeded while adding an adjustment to Sage</b><br>
+    <br>
+    While updating the following product: {{ stockCode }}, {{ maxErrors }} consecutive errors occurred<br>
+    <br>
+    The last error received from Sage was:<br><br>
+    <i>{{ errorMessage }}</i>
+</p>
+</body>
+</html>
