@@ -8,12 +8,9 @@ class PostmarkEmailTest {
     @Test
     fun sendEmail() {
         postMarkEmail.sendEmail(
-            Email.StockCode("1234"),
-            Email.Message("Hello from email test"),
-            Email.MaximumErrors(2)
-        ).fold(
-            onSuccess = { result -> assert(result.successful).also { assert(result.status == 0) } },
-            onFailure = { error -> fail(error.message) }
+            Email.StockCode("1234"), Email.Message("Hello from email test"), Email.MaximumErrors(2)
         )
+            .onFailure { error -> fail(error.message) }
+            .onSuccess { result -> assert(result.successful).also { assert(result.status == 0) } }
     }
 }
