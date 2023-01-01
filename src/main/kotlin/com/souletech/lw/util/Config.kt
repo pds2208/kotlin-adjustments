@@ -56,6 +56,8 @@ data class Configuration(
     val adjustments: Adjustments,
 )
 
-
 val config =
-    ConfigLoaderBuilder.default().addResourceSource("/application-dev.yml").build().loadConfigOrThrow<Configuration>()
+    ConfigLoaderBuilder
+        .default().addResourceSource("/application-dev.yml")
+        .build()
+        .loadConfigOrThrow<Configuration>()

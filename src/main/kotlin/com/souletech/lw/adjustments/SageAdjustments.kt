@@ -5,7 +5,7 @@ import com.souletech.lw.stock.StockInfo
 import com.souletech.lw.stock.UpdateStock
 import mu.KotlinLogging
 
-class AddSageAdjustment(val costPrice: CostPrice, val updateStock: UpdateStock) : AddAdjustment {
+class SageAdjustments(val costPrice: CostPrice, val updateStock: UpdateStock) : AddAdjustment {
 
     private val logger = KotlinLogging.logger {}
 

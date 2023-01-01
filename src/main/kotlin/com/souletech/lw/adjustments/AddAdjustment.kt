@@ -1,6 +1,7 @@
 package com.souletech.lw.adjustments
 
 interface AddAdjustment {
+
     suspend fun addAdjustmentIn(
         date: String,
         stockCode: String,
@@ -16,4 +17,5 @@ interface AddAdjustment {
         batch: String,
         quantity: Double
     )
+
 }
