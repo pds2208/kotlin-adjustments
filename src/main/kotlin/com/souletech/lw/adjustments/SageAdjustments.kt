@@ -5,9 +5,7 @@ import com.souletech.lw.stock.StockInfo
 import com.souletech.lw.stock.UpdateStock
 import mu.KotlinLogging
 
-class SageAdjustments(val costPrice: CostPrice, val updateStock: UpdateStock) : AddAdjustment {
-
-    private val logger = KotlinLogging.logger {}
+class SageAdjustments(private val costPrice: CostPrice, private val updateStock: UpdateStock) : Adjustments {
 
     override suspend fun addAdjustmentIn(
         date: String,
@@ -30,6 +28,8 @@ class SageAdjustments(val costPrice: CostPrice, val updateStock: UpdateStock) : 
     }
 
     private suspend fun addAdjustment(info: StockInfo) {
+        val logger = KotlinLogging.logger {}
+
         costPrice.getCostPrice(info.stockCode)
             .onFailure { e -> logger.warn { "Error retrieving a cost price for ${info.stockCode}: ${e.message}" } }
             .onSuccess { result ->

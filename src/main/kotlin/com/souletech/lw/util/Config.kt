@@ -16,8 +16,8 @@ data class ResumeAdjustment(
 )
 
 data class AdjustmentUpdate(
-    val initialDelay: Int,
-    val fixedDelay: Int,
+    val initialDelay: Long,
+    val fixedDelay: Long,
 )
 
 data class Cost(
